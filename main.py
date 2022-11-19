@@ -36,7 +36,7 @@ def get_report_last_scan(sing:str, api_key:str) -> dict:
 	return json.loads(report)
 
 
-def print_report_from_dict(report: dict):
+def print_report_from_dict(report: dict, detected_only=False):
 
 	print("INFO:")
 	print("   scan_id: ", report["scan_id"])
@@ -51,6 +51,9 @@ def print_report_from_dict(report: dict):
 	print("  sha1: ", report['sha1'])
 	print("  sha256: ", report["sha256"])
 	print("  md5: ", report["md5"])
+
+	if detected_only:
+		report['scans'] = {k: v for k, v in report['scans'].items() if v['detected']}
 
 	print("\nSCANS:")
 	for key in report['scans']:
@@ -70,8 +73,9 @@ if __name__ == "__main__":
 	scan_info = scan_file(filename, key)
 	sing = scan_info['scan_id']
 	report = get_report_last_scan(sing, key)
-	#print(report)
-	print_report_from_dict(report)
+
+	print_report_from_dict(report, detected_only=True)
+
 
 
 
