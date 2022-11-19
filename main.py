@@ -7,6 +7,7 @@ import requests
 def scan_file(filename:str, api_key:str) -> dict:
 	api_url_scan = 'https://www.virustotal.com/vtapi/v2/file/scan'
 	params = dict(apikey=api_key)
+	info_dict = dict()
 	if os.path.exists(filename):
 		with open(filename, 'rb') as file:
 			files = dict(file=(filename, file))
