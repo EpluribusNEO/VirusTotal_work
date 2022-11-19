@@ -22,7 +22,7 @@ def scan_file(filename:str, api_key:str) -> dict:
 	return info_dict
 
 
-def get_report_last_scan(sing:str, api_key:str):
+def get_report_last_scan(sing:str, api_key:str) -> dict:
 	api_url_report = 'https://www.virustotal.com/vtapi/v2/file/report'
 	params = dict(apikey=api_key, resource=sing)
 	response = requests.get(api_url_report, params=params, timeout=15)
@@ -33,7 +33,34 @@ def get_report_last_scan(sing:str, api_key:str):
 	else:
 		print("Что-то пошло не так...")
 		exit(1)
-	return report
+	return json.loads(report)
+
+
+def print_report_from_dict(report: dict):
+
+	print("INFO:")
+	print("   scan_id: ", report["scan_id"])
+	print("   total: ", report["total"])
+	print("   positives: ", report["positives"])
+	print("   permalink: ", report["permalink"])
+	print("   scan_date: ", report["scan_date"])
+	print("   response_code: ", report["response_code"])
+	print("   verbose_msg: ", report["verbose_msg"])
+
+	print("\nHash sum:")
+	print("  sha1: ", report['sha1'])
+	print("  sha256: ", report["sha256"])
+	print("  md5: ", report["md5"])
+
+	print("\nSCANS:")
+	for key in report['scans']:
+		print(key)
+		print("   Detected", report['scans'][key]['detected'])
+		print("   Version: ", report['scans'][key]['version'])
+		print("   Result: ", report['scans'][key]['result'])
+		print("   Update: ", report['scans'][key]['update'])
+
+
 
 if __name__ == "__main__":
 	dotenv.load_dotenv('.env')
@@ -43,5 +70,8 @@ if __name__ == "__main__":
 	scan_info = scan_file(filename, key)
 	sing = scan_info['scan_id']
 	report = get_report_last_scan(sing, key)
-	print(report)
+	#print(report)
+	print_report_from_dict(report)
+
+
 
