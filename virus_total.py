@@ -7,19 +7,17 @@ import requests
 def scan_file(filename:str, api_key:str) -> dict:
 	api_url_scan = 'https://www.virustotal.com/vtapi/v2/file/scan'
 	params = dict(apikey=api_key)
-	info_dict = dict()
+	result = dict()
 	if os.path.exists(filename):
 		with open(filename, 'rb') as file:
 			files = dict(file=(filename, file))
 			response = requests.post(api_url_scan, files=files, params=params, timeout=15)
 		if response.status_code == 200:
 			result = response.json()
-			info_str = json.dumps(result, sort_keys=False, indent=4)
-			info_dict = json.loads(info_str)
 	else:
 		print("File not exist:")
 		exit(1)
-	return info_dict
+	return result #info_dict
 
 
 
@@ -44,7 +42,7 @@ def get_report_last_scan(sing:str, api_key:str) -> dict:
 	return json.loads(report)
 
 
-def print_report_from_dict_for_file(report: dict, detected_only=False):
+def print_report_file(report: dict, detected_only=False):
 
 	print("INFO:")
 	print("   scan_id: ", report.get("scan_id"))
@@ -75,30 +73,58 @@ def print_report_from_dict_for_file(report: dict, detected_only=False):
 
 
 # <URL>------------------------------------------------------------
-def scan_url(url: str, apikey: str):
+def scan_url(url: str, apikey: str) -> dict:
 	"""
 	Отправка URL на сервер для сканирования
 	:param url: ссылка для сканирования
 	:param apikey: ключ для АПи Virus Total
-	:return: ничего... Печатает ответ..
+	:return: словарь и информацией
 	"""
 	api_url = "https://www.virustotal.com/vtapi/v2/url/scan"
 	params = dict(apikey=apikey, url=url)
-	response = requests.post(api_url, data=params)
+	response = requests.post(api_url, data=params, timeout=15)
 	if response.status_code == 200:
 		result = response.json()
-		print(json.dumps(result, sort_keys=False, indent=4))
+		# print(json.dumps(result, sort_keys=False, indent=4))
+		return result
 
+def get_report(url: str, apikey:str) -> dict:
+	"""
+	Получить отчёт о результатах сканирования URL
 
-def get_report(url: str, apikey:str):
+	:param url: Адрес ресурса
+	:param apikey: ключ API Virus Total
+	:return: словарт с отчётом
+	"""
 	api_url = "https://www.virustotal.com/vtapi/v2/url/report"
 	params = dict(apikey=apikey, resource=url, scan=0)
-	response = requests.get(api_url, params=params)
+	response = requests.get(api_url, params=params, timeout=15)
 	if response.status_code == 200:
 		result = response.json()
-		print(json.dumps(result, sort_keys=False, indent=4))
+		#print(json.dumps(result, sort_keys=False, indent=4))
+		return result
 
+def print_report_url(report: dict, detected_only=False):
+	print("INFO:")
+	print(f"   scan_id: {report.get('scan_id')}\n"
+	      f"   resource: {report.get('resource')}\n"
+	      f"   url: {report.get('url')}\n"
+	      f"   response_code: {report.get('response_code')}\n"
+	      f"   scan_date: {report.get('scan_date')}\n"
+	      f"   permalink: {report.get('permalink')}\n"
+	      f"   verbose_msg: {report.get('verbose_msg')}\n"
+	      f"   filescan_id: {report.get('filescan_id')}\n"
+	      f"   positives: {report.get('positives')}\n"
+	      f"   total: {report.get('total')}")
 
+	if detected_only:
+		report['scans'] = {k: v for k, v in report['scans'].items() if v['detected']}
+
+	print("\nSCANS:")
+	for r in report['scans']:
+		print(r)
+		print("   Detected", report['scans'][r]['detected'])
+		print("   Result: ", report['scans'][r]['result'])
 
 # </URL>------------------------------------------------------------
 
