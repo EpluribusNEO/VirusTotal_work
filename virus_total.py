@@ -128,5 +128,27 @@ def print_report_url(report: dict, detected_only=False):
 
 # </URL>------------------------------------------------------------
 
+
+# <IP>------------------------------------------------------------
+def scan_ip(ip: str, apikey: str):
+	api_url = "https://www.virustotal.com/vtapi/v2/domain/report"
+	params = dict(apikey=apikey, domain=ip)
+	response = requests.get(api_url, params=params, timeout=15)
+	if response.status_code == 200:
+		result = response.json()
+		return result
+# </IP>------------------------------------------------------------
+
+
+# <JSON dump>------------------------------------------------------------
+def dump_to_json(report:dict, filename:str="report.json"):
+	with open(filename, 'a') as file:
+		json.dump(report, file)
+
+	f = open(filename, 'a')
+	f.write('\n')
+	f.close()
+# </JSON dump>------------------------------------------------------------
+
 if __name__ == "__main__":
 	print("[WARNING] This is a module. Don't using like main-file....")
